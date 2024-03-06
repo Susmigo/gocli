@@ -1,46 +1,50 @@
 """
 This script manages the device details of the connected device.
 """
-from utilities import _run_command
+from utilities import runCommand
 
 
 class DeviceDetails:
-    @staticmethod
-    def get_device_info(prop: str) -> str:
-        return _run_command(f'adb shell getprop {prop}')
+    @classmethod
+    def getDeviceInfo(cls, prop: str) -> str:
+        return runCommand(f'adb shell getprop {prop}')
 
     @classmethod
-    def get_device_manufacturer(cls) -> str:
-        return cls.get_device_info('ro.product.manufacturer')
+    def getDeviceManufacturer(cls) -> str:
+        return cls.getDeviceInfo('ro.product.manufacturer')
 
     @classmethod
-    def get_device_model(cls) -> str:
-        return cls.get_device_info('ro.product.model')
+    def getDeviceModel(cls) -> str:
+        return cls.getDeviceInfo('ro.product.model')
 
     @classmethod
-    def get_device_name(cls) -> str:
-        return cls.get_device_info('ro.product.name')
+    def getDeviceName(cls) -> str:
+        return cls.getDeviceInfo('ro.product.name')
 
     @classmethod
-    def get_device_build(cls) -> str:
-        return cls.get_device_info('ro.build.description')
+    def getDeviceBuild(cls) -> str:
+        return cls.getDeviceInfo('ro.build.description')
 
     @classmethod
-    def get_experience(cls) -> bool:
-        return "launcherx" in _run_command('adb shell pm list packages')
+    def getExperience(cls) -> bool:
+        return "launcherx" in runCommand('adb shell pm list packages')
 
     @classmethod
-    def final_print_str(cls) -> str:
+    def getLocale(cls) -> str:
+        return cls.getDeviceInfo('persist.sys.locale')
+
+    @classmethod
+    def finalPrint(cls) -> str:
         output = ""
-        output += (f"Device: [{cls.get_device_manufacturer()}] {cls.get_device_model()} "
-                   f"({cls.get_device_name()})\n")
-        output += f"Build: {cls.get_device_build()}"
+        output += (f"Device: [{cls.getDeviceManufacturer()}] {cls.getDeviceModel()} "
+                   f"({cls.getDeviceName()})\n")
+        output += f"Build: {cls.getDeviceBuild()}"
         return output
 
     @classmethod
-    def final_print_for_tabulate(cls) -> list:
+    def finalPrintTabulate(cls) -> list:
         # Split the string into lines
-        lines = cls.final_print_str().split('\n')
+        lines = cls.finalPrint().split('\n')
         # Create the result list using a list comprehension
         result = [["**" + key.strip() + "**", value.strip()] for key, value in
                   (line.split(': ', 1) for line in lines if line)]
@@ -48,5 +52,5 @@ class DeviceDetails:
 
 
 if __name__ == "__main__":
-    print("For string:\n", DeviceDetails.final_print_str())
-    print("For tabulate:\n", DeviceDetails.final_print_for_tabulate())
+    print("For string:\n", DeviceDetails.finalPrint())
+    print("For tabulate:\n", DeviceDetails.finalPrintTabulate())

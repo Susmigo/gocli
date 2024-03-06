@@ -3,34 +3,33 @@ This Script gives the version and version code of the installed applications
 """
 import re
 
+import httpx
 import requests
 from bs4 import BeautifulSoup
-from google_play_scraper import app, exceptions
 from tabulate import tabulate
 
-from utilities import _run_command
+from utilities import runCommand
 
 
-class VersionMangager:
+class VersionManager:
     @classmethod
-    def listpackages(cls) -> list[str]:
-        raw = _run_command('adb shell pm list packages').split('\n')
-        packageslist = [(pckg.split(':', 1)[1]) for pckg in raw]
-        return packageslist
-
-    @classmethod
-    def getversionname(cls, _package: str) -> str:
-        packageversionname = _run_command(f'adb shell dumpsys package {_package} | grep versionName=').split('\n', 1)
-        return packageversionname[0].split('=', 1)[1]
+    def listPackages(cls) -> list[str]:
+        _raw = runCommand('adb shell pm list packages').split('\n')
+        return [(pckg.split(':', 1)[1]) for pckg in _raw]
 
     @classmethod
-    def getversioncode(cls, _package: str) -> str:
-        packageversioncode = _run_command(f'adb shell dumpsys package {_package} | grep versionCode=').split('\n', 1)
-        return packageversioncode[0].split(' ', 1)[0]
+    def getVersionName(cls, _package: str) -> str:
+        _packageversionname = runCommand(f'adb shell dumpsys package {_package} | grep versionName=').split('\n', 1)
+        return _packageversionname[0].split('=', 1)[1]
 
     @classmethod
-    def getversionnamecode(cls, _package) -> str:
-        version = _run_command(f"adb shell dumpsys package {_package} | grep version")
+    def getVersionCode(cls, _package: str) -> str:
+        _packageversioncode = runCommand(f'adb shell dumpsys package {_package} | grep versionCode=').split('\n', 1)
+        return _packageversioncode[0].split(' ', 1)[0]
+
+    @classmethod
+    def getVersionNameCode(cls, _package) -> str:
+        version = runCommand(f"adb shell dumpsys package {_package} | grep version")
         versionNamePattern = r'versionName=([^\s]*)'
         versionCodePattern = r'versionCode=([^\s]*)'
         versionName = re.findall(versionNamePattern, version)[0]
@@ -38,41 +37,41 @@ class VersionMangager:
         return f"{versionName} (versionCode={versionCode})"
 
     @classmethod
-    def final_print_for_tabulate(cls) -> list:
+    def finalPrintTabulate(cls) -> list:
         res = ""
-        for _ in cls.listpackages():
-            res += f"{PlaystoreScrapper.getappname(_)}* {_}* {cls.getversionnamecode(_)}\n"
+        for _ in cls.listPackages():
+            res += f"{PlayStoreScrapper.get_app_name(_)}* {_}* {cls.getVersionNameCode(_)}\n"
         table_data = res.split('\n')
         return [[title.strip(), package.strip(), version.strip()]
                 for title, package, version in [(line.split('* ', 2)) for line in table_data if line]]
 
 
-class PlaystoreScrapper:
+# class PlaystoreScrapper:
+#
+#     @classmethod
+#     def getappname(cls, package: str) -> str:
+#         try:
+#             appname = app(package)
+#         except exceptions.NotFoundError:
+#             appname = {'title': 'System app'}
+#         return appname['title']
+#
+#     @classmethod
+#     def getversion(cls, package: str):
+#         try:
+#             appversion = app(package)
+#         except exceptions.NotFoundError:
+#             appversion = {'version': 'Not found'}
+#         return appversion
+#
+#     @classmethod
+#     def getpackagetitles(cls):
+#         packages = VersionMangager.listpackages()
+#         for _ in packages:
+#             print(_, cls.getappname(_))
 
-    @classmethod
-    def getappname(cls, package: str) -> str:
-        try:
-            appname = app(package)
-        except exceptions.NotFoundError:
-            appname = {'title': 'System app'}
-        return appname['title']
 
-    @classmethod
-    def getversion(cls, package: str):
-        try:
-            appversion = app(package)
-        except exceptions.NotFoundError:
-            appversion = {'version': 'Not found'}
-        return appversion
-
-    @classmethod
-    def getpackagetitles(cls):
-        packages = VersionMangager.listpackages()
-        for _ in packages:
-            print(_, cls.getappname(_))
-
-
-class Test:
+class PlayStoreScrapper:
 
     @classmethod
     def getappname(cls, package: str):
@@ -81,22 +80,41 @@ class Test:
         soup = BeautifulSoup(r.content, 'html.parser')
         output = soup.text.split(' - A')[0] if not soup.text.split(' - A')[0].count("We're sorry") else "System App"
         return {'title': output, 'package': package,
-                'version': VersionMangager.getversionnamecode(package), 'url': r.url}
+                'version': VersionManager.getVersionNameCode(package), 'url': r.url}
 
     @classmethod
-    def runner(cls):
-        pkg = VersionMangager.listpackages()
-        relist = []
-        headers = ['App Name', 'Package', 'Version (code)', 'Play Url']
-        for _ in sorted(pkg):
-            relist.append(list(Test.getappname(_).values()))
-        print(tabulate(headers=headers, tabular_data=relist, tablefmt="pipe", ))
+    async def get_app_name(cls, package: str):
+        play_url = f"https://play.google.com/store/apps/details?id={package}"
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(play_url)
+                response.raise_for_status()
+
+                soup = BeautifulSoup(response.content, 'html.parser')
+                title_prefix = ' - A'
+                output = (
+                    soup.text.split(title_prefix)[0]
+                    if not soup.text.split(title_prefix)[0].count("We're sorry")
+                    else "System App"
+                )
+
+                return {
+                    'title': output,
+                    'package': package,
+                    'version': await VersionManager.getVersionNameCode(package),
+                    'url': response.url
+                }
+
+            except httpx.RequestError as e:
+                print(f"Error during request: {e}")
+                return None
 
 
 if __name__ == "__main__":
-    pkg = VersionMangager.listpackages()
+    pkg = VersionManager.listPackages()
     relist = []
     headers = ['App Name', 'Package', 'Version (code)', 'Play Url']
-    for _ in sorted(pkg):
-        relist.append(list(Test.getappname(_).values()))
-    print(tabulate(headers=headers, tabular_data=relist, tablefmt="pipe",))
+    # for _ in sorted(pkg):
+    #     relist.append(list(PlayStoreScrapper.getappname(_).values()))
+    print(tabulate(headers=headers, tabular_data=VersionManager.finalPrintTabulate(), tablefmt="pipe", ))
