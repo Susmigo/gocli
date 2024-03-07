@@ -20,16 +20,29 @@
 #     app_info['version'] = version_tag.text.strip() if version_tag else "Version information not found"
 #
 #     app_info_dict[package_name] = app_info
-
-from rich import print
-from rich.layout import Layout
-from rich.panel import Panel
-
-import bugdescriptor
-
-layout = Layout()
-
-layout.update(
-    Layout(Panel(bugdescriptor.Descriptor.bugDescriptor()))
-)
-print(layout)
+#
+#
+# import platform
+# import subprocess
+# import urllib.parse
+#
+# import bugdescriptor
+#
+# browserPath = {
+#     'Darwin': "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+#     "Linux": "/opt/google/chrome/google-chrome"}
+#
+# query = bugdescriptor.Descriptor.bugDescriptor()
+# desc = urllib.parse.quote(query)
+#
+#
+# def openChrome(link: str):
+#     _platform = platform.system()
+#     chromePath = browserPath.get(platform.system(), browserPath.get('Linux'))
+#     args = ["--args", "--profile-directory=Default", link]
+#
+#     command = [chromePath] + args
+#     subprocess.Popen(command)
+#
+#
+# openChrome(f"http://b/new?&description={desc}&format=MARKDOWN")
