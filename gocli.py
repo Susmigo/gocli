@@ -90,17 +90,19 @@ def bugDescriptor(self, withbugreport: Annotated[
     $ gocli bug -e
     $ gocli bug -we  [Recommended]  # Generates bugreport, also exports bug description
     """
+    descriptor = Descriptor()
     if withbugreport:
         console.print(Bug.WITH_BUGREPORT)
     else:
         console.print(Bug.WITHOUT_BUGREPORT)
-    fo = Descriptor.bugDescriptor()
+    fo = descriptor.bugDescriptor()
     __printer(fo)
+    webparser = WebParser()
     if export:
-        WebParser.takeMetoBuganizer(fo)
+        webparser.takeMetoBuganizer(fo)
         time.sleep(2)
     if withbugreport:
-        Bugreport.captureBugReport()
+        Bugreport().captureBugReport()
 
 
 # noinspection PyUnusedLocal
@@ -129,13 +131,16 @@ def commentDescriptor(withbugreport: Annotated[
         console.print(Comment.WITH_BUGREPORT)
     else:
         console.print(Comment.WITHOUT_BUGREPORT)
-    fo = Descriptor.commentDescriptor()
+    descriptor = Descriptor()
+    fo = descriptor.commentDescriptor()
+    bugreport = Bugreport()
     __printer(fo)
+    webparser = WebParser()
     if export:
-        WebParser.takeMetoBuganizer(fo)
+        webparser.takeMetoBuganizer(fo)
         time.sleep(2)
     if withbugreport:
-        Bugreport.captureBugReport()
+        bugreport.captureBugReport()
 
 
 if __name__ == "__main__":
