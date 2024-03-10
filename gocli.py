@@ -68,7 +68,7 @@ def version_callback(value: bool):
 
 # noinspection PyUnusedLocal
 @app.command(name="bug", short_help=Bug.SHORT_HELP, epilog=Gocli.EPILOG)
-def bugDescriptor(self, withbugreport: Annotated[
+def bugDescriptor(withbugreport: Annotated[
     bool, typer.Option("--with-bugreport", "-w",
                        help=Bug.BUGREPORT_FLAG_HELP, show_default=False,
                        )] = False,
