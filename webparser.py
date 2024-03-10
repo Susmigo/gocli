@@ -4,6 +4,7 @@ This file opens the links in chrome.
 import platform
 import subprocess
 import urllib.parse
+from typing import overload
 
 from utilities import Errors, ChromeProfile
 
@@ -43,6 +44,11 @@ class WebParser:
     def takeMetoBuganizer(self, func):
         raw = self.descParser(func)
         link = f"http://b/new?&description={raw}&format=MARKDOWN"
+        self.openChrome(link)
+
+    def takemetoBuganizer(self, bug_id: int, func):
+        raw = self.descParser(func)
+        link = f"http://b/{bug_id}?comment={raw}&format=MARKDOWN"
         self.openChrome(link)
 
 

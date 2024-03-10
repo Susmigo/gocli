@@ -14,6 +14,7 @@ class Errors:
     """
     Shows custom errors, info and success messages in the terminal.
     """
+
     def __init__(self):
         self.console = Console()
 
@@ -46,6 +47,7 @@ class Checks(Errors):
     """
     Adb checks before executing any command.
     """
+
     def __init__(self):
         super().__init__()
 
@@ -160,6 +162,22 @@ class ChromeProfile(Errors):
             return self.saveToConfig()
 
 
+class HandleFiles(Errors):
+
+    def __init__(self):
+        super().__init__()
+        self.home = os.path.expanduser('~')
+
+    def checkDir(self, _dir: str) -> bool:
+        dir_path = os.path.join(self.home, _dir)
+        print(dir_path)
+        return os.path.exists(dir_path)
+
+    @staticmethod
+    def makeDir(_dir: str):
+        pass
+
+
 if __name__ == "__main__":
     # err = Errors()
     # chk = Checks()
@@ -171,9 +189,11 @@ if __name__ == "__main__":
     # print(chk.checkAdbDevices())
     # print(cmd.runCommand('adb hi'))
     # err.displayErrorExit('hi')
-    cp = ChromeProfile()
+    # cp = ChromeProfile()
     # print(cp.getChromeUserDir())
     # print(cp.fetchProfile('google.com'))
     # print(cp.saveToConfig())
-    print(cp.getProfileFromConfig())
-    print(cp.saveToConfig())
+    # print(cp.getProfileFromConfig())
+    # print(cp.saveToConfig())
+    hf = HandleFiles()
+    print(hf.checkDir("/temp"))

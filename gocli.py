@@ -8,15 +8,16 @@ import click
 import typer
 from pyperclip import copy
 from rich.console import Console
+from rich.prompt import IntPrompt
+from typer.core import TyperGroup as TyperGroupBase
 from typing_extensions import Annotated, Optional
 
 from bugdescriptor import Descriptor
 from bugreportgenerator import Bugreport
-from cliconstants import Gocli, Bug, Comment
+from cliconstants import *
 from devicedetails import DeviceDetails
 from utilities import Checks
 from webparser import WebParser
-from typer.core import TyperGroup as TyperGroupBase
 
 console = Console()
 
@@ -35,15 +36,13 @@ class TyperGroup(TyperGroupBase):
     def get_usage(self, ctx: click.Context) -> str:
         """Override get_usage."""
         usage = super().get_usage(ctx)
-        message = (
-            f"{Gocli.TYPER_HELP_USAGE}\n\n{self.dut.finalPrint()}\n\n{usage}"
-        )
+        message = (f"{Gocli.TYPER_HELP_USAGE}\n\n"
+                   f"Connected Device:\n{self.dut.finalPrint()}\n\n{usage}")
         return message
 
 
 app = typer.Typer(rich_markup_mode="rich", epilog=Gocli.EPILOG, no_args_is_help=True,
-                  context_settings={"help_option_names": ["-h", "--help"]},
-                  invoke_without_command=True, cls=TyperGroup)
+                  context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True, cls=TyperGroup)
 
 
 def __printer(_app: Any):
@@ -69,18 +68,15 @@ def version_callback(value: bool):
 # noinspection PyUnusedLocal
 @app.command(name="bug", short_help=Bug.SHORT_HELP, epilog=Gocli.EPILOG)
 def bugDescriptor(withbugreport: Annotated[
-    bool, typer.Option("--with-bugreport", "-w",
-                       help=Bug.BUGREPORT_FLAG_HELP, show_default=False,
-                       )] = False,
+    bool, typer.Option("--with-bugreport", "-w", help=Bug.BUGREPORT_FLAG_HELP, show_default=False, )] = False,
                   export: Annotated[bool, typer.Option("--export", '-e', help=Bug.EXPORT_FLAG_HELP, )] = False,
-                  version: Annotated[
-                      Optional[bool], typer.Option("--version", "-v", callback=version_callback,
-                                                   help=Gocli.VERSION_FLAG_HELP,
-                                                   is_eager=True)] = None, ):
+                  version: Annotated[Optional[bool], typer.Option("--version", "-v", callback=version_callback,
+                                                                  help=Gocli.VERSION_FLAG_HELP,
+                                                                  is_eager=True)] = None, ):
     """
     Generates Bug description from the Connected Android device 📲.
 
-    --with-bugreport, -wb: Include a bug report in the output.
+    --with-bugreport, -w: Include a bug report in the output.
     --export, -e: Exports the Bug Description to buganizer.
 
     Examples:
@@ -110,15 +106,14 @@ def bugDescriptor(withbugreport: Annotated[
 def commentDescriptor(withbugreport: Annotated[
     bool, typer.Option("--with-bugreport", "-w", help=Comment.BUGREPORT_FLAG_HELP, show_default=False)] = False,
                       export: Annotated[bool, typer.Option("--export", '-e', help=Comment.EXPORT_FLAG_HELP, )] = False,
-                      version: Annotated[
-                          Optional[bool], typer.Option("--version", "-v", callback=version_callback,
-                                                       help=Gocli.VERSION_FLAG_HELP,
-                                                       is_eager=True)] = None, ):
+                      version: Annotated[Optional[bool], typer.Option("--version", "-v", callback=version_callback,
+                                                                      help=Gocli.VERSION_FLAG_HELP,
+                                                                      is_eager=True)] = None, ):
     """
     Generates Comment description from the Connected Android device 📲.
 
-    --with-bugreport, -wb: Include a bug report in the output.
-    --export, -e: Exports the Comment Description to buganizer.
+    --with-bugreport, -w: Include a bug report in the output.
+    --export, -e: Exports the Comment Description to buganizer bug ID.
 
     Examples:
     $ gocli cmt --with-bugreport
@@ -137,10 +132,40 @@ def commentDescriptor(withbugreport: Annotated[
     __printer(fo)
     webparser = WebParser()
     if export:
-        webparser.takeMetoBuganizer(fo)
+        _id = IntPrompt.ask(Comment.BUG_ID_FOR_COMMENT)
+        webparser.takemetoBuganizer(_id, fo)
         time.sleep(2)
     if withbugreport:
         bugreport.captureBugReport()
+
+
+# noinspection PyUnusedLocal
+@app.command(name="brpt", short_help=BugReport.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
+def getBugreport(version: Annotated[Optional[bool],
+typer.Option("--version", "-v", callback=version_callback,
+             help=Gocli.VERSION_FLAG_HELP,
+             is_eager=True)] = None, ):
+    console.print(BugReport.CONSOLE_PRINT)
+    bugreport = Bugreport()
+    bugreport.captureBugReport()
+
+
+# noinspection PyUnusedLocal
+@app.command(name="ss", short_help=Screenshot.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
+def getBugreport(version: Annotated[Optional[bool],
+typer.Option("--version", "-v", callback=version_callback,
+             help=Gocli.VERSION_FLAG_HELP,
+             is_eager=True)] = None, ):
+    console.print(Screenshot.CONSOLE_PRINT)
+
+
+# noinspection PyUnusedLocal
+@app.command(name="sr", short_help=Screenrecord.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
+def getBugreport(version: Annotated[Optional[bool],
+typer.Option("--version", "-v", callback=version_callback,
+             help=Gocli.VERSION_FLAG_HELP,
+             is_eager=True)] = None, ):
+    console.print(Screenrecord.CONSOLE_PRINT)
 
 
 if __name__ == "__main__":

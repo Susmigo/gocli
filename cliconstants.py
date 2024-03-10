@@ -21,3 +21,20 @@ class Comment:
     WITHOUT_BUGREPORT = "Generating Comment Description...\n"
     EXPORT_FLAG_HELP = "Captures the Bug Report."
     BUGREPORT_FLAG_HELP = "Exports the Comment Description to Buganizer."
+    BUG_ID_FOR_COMMENT = "\nEnter the bug ID :beetle: for adding a comment"
+
+
+class BugReport:
+    SHORT_HELP = "Generates the Bug report."
+    CONSOLE_PRINT = "Generating the Bugreport..."
+
+
+class Screenshot:
+    SHORT_HELP = "Captures the screenshot."
+    CONSOLE_PRINT = "Capturing the screenshot."
+
+
+class Screenrecord:
+    SHORT_HELP = "Captures the screenrecord."
+    CONSOLE_PRINT = "Capturing the screenrecord."
+
