@@ -9,44 +9,47 @@ from rich.prompt import Prompt
 from rich.table import Table
 
 from devicedetails import DeviceDetails
-from utilities import runCommand, displayErrorExit
-
-console = Console()
+from utilities import Checks, Errors, Commands
 
 
 class Accounts:
-    @classmethod
-    def listAccounts(cls) -> list:
+    def __init__(self):
+        self.cmd = Commands()
+        self.chk = Checks()
+        self.err = Errors()
+        self.console = Console()
+        self.device = DeviceDetails()
+
+    def listAccounts(self) -> list:
         try:
             adb_command = "adb shell dumpsys account"
-            output = runCommand(adb_command)
+            output = self.cmd.runCommand(adb_command)
             accounts = [line.split('=', 2)[1].split(',')[0] for line in output.strip().split('\n') if
                         line.startswith("    Account {name=")]
             return accounts
         except Exception:
-            displayErrorExit('Something went wrong in Fetching the accounts.')
+            self.err.displayErrorExit('Something went wrong in Fetching the accounts.')
 
-    @classmethod
-    def selectFromList(cls) -> Union[str, None]:
-        accounts = cls.listAccounts()
+    def selectFromList(self) -> Union[str, None]:
+        accounts = self.listAccounts()
         custom_option = len(accounts) + 1
         options = accounts + ["Custom account"]
 
         # customizing the table
-        table = Table(title=f"List of accounts in {DeviceDetails.getDeviceName()} device", highlight=True,
+        table = Table(title=f"List of accounts in {self.device.getDeviceName()} device", highlight=True,
                       style="magenta", title_style="bold blue italic", )
         table.add_column("Id", justify="center", vertical="middle", )
         table.add_column("Accounts", justify="center", vertical="middle")
 
-        # Display account options in the table
+        # Display account options in the table.
         for idx, account in enumerate(options, start=1):
             table.add_row(str(idx), account, style="cyan", )
-        console.print(table, new_line_start=True)  # printing the table
+        self.console.print(table, new_line_start=True)  # printing the table
 
-        # Get user input for selection
-        selection = Prompt.ask('Enter the account id in which issue is reproducing')
+        # Get user input for selection.
+        selection = Prompt.ask('Enter the account id in which issue is reproducing\n(Press ENTER for No account)')
 
-        console.clear()
+        self.console.clear()
 
         # Check if the input is not empty before processing
         if selection and selection.isdigit() and 1 <= int(selection) <= custom_option:
@@ -55,27 +58,26 @@ class Accounts:
                 selected_account = options[selected_index]
                 return selected_account
             else:
-                custom_account = input("Enter the custom account: ")
-                console.clear()
-                return custom_account + '@gmail.com'
+                custom_account = Prompt.ask("Enter the custom account")
+                self.console.clear()
+                return custom_account if str(custom_account).endswith('.com') else custom_account + '@gmail.com'
         else:
+            self.console.print("Generating description with No account.")
             return None  # if user didn't enter any ID it returns None
 
-    @classmethod
-    def finalPrint(cls) -> str:
-        _account = cls.selectFromList()
+    def finalPrint(self) -> str:
+        _account = self.selectFromList()
         return f"Account ID: {_account}" if _account is not None else ""
 
-    @classmethod
-    def finalPrintTabulate(cls) -> list:
+    def finalPrintTabulate(self) -> list:
         """
         Prints the list of accounts in tabulate format
         :return: List of accounts in tabulate format
         """
-        _account = cls.selectFromList()
+        _account = self.selectFromList()
         return [["**Account ID**", _account]] if _account is not None else ""
 
 
 if __name__ == "__main__":
-    # print("For string:\n", Accounts.finalPrint())
-    print("For tabulate:\n", Accounts.finalPrintTabulate())
+    # print("For string:\n", Accounts().finalPrint())
+    print("For tabulate:\n", Accounts().finalPrintTabulate())

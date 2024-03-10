@@ -14,23 +14,29 @@ from bugdescriptor import Descriptor
 from bugreportgenerator import Bugreport
 from cliconstants import Gocli, Bug, Comment
 from devicedetails import DeviceDetails
-from utilities import checkAdbDevices
+from utilities import Checks
 from webparser import WebParser
 from typer.core import TyperGroup as TyperGroupBase
 
+console = Console()
+
 
 def adbCheck():
-    checkAdbDevices()
+    Checks().checkAdbDevices()
 
 
 class TyperGroup(TyperGroupBase):
     """Custom TyperGroup class."""
 
+    def __init__(self, **attrs: Any):
+        super().__init__(**attrs)
+        self.dut = DeviceDetails()
+
     def get_usage(self, ctx: click.Context) -> str:
         """Override get_usage."""
         usage = super().get_usage(ctx)
         message = (
-            f"{Gocli.TYPER_HELP_USAGE}\n\n{DeviceDetails.finalPrint()}\n\n{usage}"
+            f"{Gocli.TYPER_HELP_USAGE}\n\n{self.dut.finalPrint()}\n\n{usage}"
         )
         return message
 
@@ -38,7 +44,6 @@ class TyperGroup(TyperGroupBase):
 app = typer.Typer(rich_markup_mode="rich", epilog=Gocli.EPILOG, no_args_is_help=True,
                   context_settings={"help_option_names": ["-h", "--help"]},
                   invoke_without_command=True, cls=TyperGroup)
-console = Console()
 
 
 def __printer(_app: Any):
@@ -63,7 +68,7 @@ def version_callback(value: bool):
 
 # noinspection PyUnusedLocal
 @app.command(name="bug", short_help=Bug.SHORT_HELP, epilog=Gocli.EPILOG)
-def bugDescriptor(withbugreport: Annotated[
+def bugDescriptor(self, withbugreport: Annotated[
     bool, typer.Option("--with-bugreport", "-w",
                        help=Bug.BUGREPORT_FLAG_HELP, show_default=False,
                        )] = False,

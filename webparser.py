@@ -5,44 +5,48 @@ import platform
 import subprocess
 import urllib.parse
 
-from utilities import displayErrorExit
+from utilities import Errors, ChromeProfile
 
 
 class WebParser:
+    def __init__(self):
+        self.err = Errors()
+        self.cp = ChromeProfile()
+
     __browserPaths = {
         'Darwin': "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
         'Linux': "/opt/google/chrome/google-chrome"
     }
 
-    @classmethod
-    def __determinePlatform(cls) -> tuple[str, str]:
+    @staticmethod
+    def __determinePlatform() -> tuple[str, str]:
         return platform.system(), platform.machine()
 
-    @classmethod
-    def openChrome(cls, link: str):
-        system, arch = cls.__determinePlatform()
-        execPath = cls.__browserPaths.get(system, cls.__browserPaths['Linux'])
-        args = ["--args", "--profile-directory=Default", link]
+    def openChrome(self, link: str):
+        system, arch = self.__determinePlatform()
+        profile = self.cp.getProfileFromConfig()
+        execPath = self.__browserPaths.get(system, self.__browserPaths['Linux'])
+        args = ["--args", f"--profile-directory={profile}", link]
         try:
             command = [execPath] + args
-            subprocess.Popen(command,stdout=subprocess.DEVNULL)
+            subprocess.Popen(command, stdout=subprocess.DEVNULL)
         except FileNotFoundError:
-            displayErrorExit("Chrome executable path is not given correctly.")
+            self.err.displayErrorExit("Chrome executable path is not given correctly.")
         except Exception:
-            displayErrorExit("Something went wrong.")
+            self.err.displayErrorExit("Something went wrong.")
 
-    @classmethod
-    def descParser(cls, description: str) -> str:
+    @staticmethod
+    def descParser(description: str) -> str:
         query = urllib.parse.quote(description)
         return query
 
-    @classmethod
-    def takeMetoBuganizer(cls, func):
-        raw = cls.descParser(func)
+    def takeMetoBuganizer(self, func):
+        raw = self.descParser(func)
         link = f"http://b/new?&description={raw}&format=MARKDOWN"
-        cls.openChrome(link)
+        self.openChrome(link)
 
 
 if __name__ == "__main__":
-    WebParser.openChrome('b/')
-    print(WebParser.descParser("helof sfhskfhs fskjfhskfh %% &24 & *q3467t 09093()"))
+    wp = WebParser()
+    wp.openChrome(link='b/')
+    print(wp.descParser('jhsfwh 53w353453451@#$%^&8qr0'))

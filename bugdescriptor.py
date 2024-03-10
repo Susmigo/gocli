@@ -10,37 +10,43 @@ from devicedetails import DeviceDetails
 
 
 class TableFormatter:
-    @classmethod
-    def bugTableFormatter(cls, fmt: str = "pipe"):
+    def __init__(self):
+        self.acc = Accounts()
+        self.apk = ApkDetails()
+        self.dut = DeviceDetails()
+
+    def bugTableFormatter(self, fmt: str = "pipe"):
         headers = ['Environment', ' Details']
         table = []
-        table.extend(DeviceDetails().finalPrintTabulate())
-        table.extend(ApkDetails().finalPrintTabulate())
-        table.extend(Accounts().finalPrintTabulate())
+        table.extend(self.dut.finalPrintTabulate())
+        table.extend(self.apk.finalPrintTabulate())
+        table.extend(self.acc.finalPrintTabulate())
         return tabulate(table, headers, tablefmt=fmt)
 
-    @classmethod
-    def commentTableFormatter(cls) -> str:
-        _output = (f"{DeviceDetails.finalPrint()}\n"
-                   f"{ApkDetails.finalPrint()}"
-                   f"{Accounts.finalPrint()}")
+    def commentTableFormatter(self) -> str:
+        _output = (f"{self.dut.finalPrint()}\n"
+                   f"{self.apk.finalPrint()}"
+                   f"{self.acc.finalPrint()}")
         return _output.strip()
 
 
-class Descriptor:
+class Descriptor(TableFormatter):
 
-    @classmethod
-    def bugDescriptor(cls):
-        launcherxText = (f"1. Setup the device with **{DeviceDetails.getLocale()}** locale and install the above "
+    def __init__(self):
+        super().__init__()
+
+    def bugDescriptor(self):
+        locale = self.dut.getLocale()
+        launcherXText = (f"1. Setup the device with **{locale}** locale and install the above "
                          f"LauncherX build.")
-        watsonText = (f"1. Setup the device with **{DeviceDetails.getLocale()}** locale and install the above TV Home "
+        watsonText = (f"1. Setup the device with **{locale}** locale and install the above TV Home "
                       f"and TV Core builds.")
         _output = (f"\n##### TEST ENVIRONMENT:\n"
-                   f"{TableFormatter.bugTableFormatter()}\n\n"
+                   f"{self.bugTableFormatter()}\n\n"
                    f"NOTE: Please change the component if it is not relevant.\n\n"
                    f"##### STEPS TO REPRODUCE:\n"
-                   f"{launcherxText if DeviceDetails.getExperience() else watsonText}\n"
-                   f"2. Connect to the **`US`** region using a VPN.\n3.\n4.\n\n"
+                   f"{launcherXText if self.dut.getExperience() else watsonText}\n"
+                   f"2. Connect to the **{locale.split('-',1)[1]}** region using a VPN.\n3.\n4.\n\n"
                    f"##### EXPECTED RESULT:\n- \n\n"
                    f"##### OBSERVED RESULT:\n- \n\n"
                    f"##### REPRO RATE: 5/5\n\n"
@@ -50,13 +56,12 @@ class Descriptor:
                    f"Attached Bugreport and Screen Recording.")
         return _output
 
-    @classmethod
-    def commentDescriptor(cls):
+    def commentDescriptor(self):
         _output = (f"The issue is reproducible,\n\n"
                    f"Tested in following environment:\n"
                    f"##### Test Environment:\n"
                    f"````\n"
-                   f"{TableFormatter.commentTableFormatter()}\n"
+                   f"{self.commentTableFormatter()}\n"
                    f"````\n"
                    f"##### Screen Recording:\n-\n"
                    f"##### Sherlogs:\n-\n"
@@ -65,7 +70,7 @@ class Descriptor:
 
 
 if __name__ == "__main__":
-    # print(TableFormatter.bugTableFormatter())
-    # print(TableFormatter.commentTableFormatter())
-    # print(Descriptor.commentDescriptor())
-    print(Descriptor.bugDescriptor())
+    # print(TableFormatter().bugTableFormatter())
+    # print(TableFormatter().commentTableFormatter())
+    print(Descriptor().commentDescriptor())
+    print(Descriptor().bugDescriptor())

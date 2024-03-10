@@ -8,9 +8,10 @@ import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from rich.console import Console
 from rich.progress import Progress
 
-from utilities import checkAdbDevices, displayError
+from utilities import Commands, Errors, Checks
 
 
 def runSubProcess(command):
@@ -31,8 +32,13 @@ def runSubProcess(command):
 class Bugreport:
     TOTAL_PROGRESS = 180
 
-    @classmethod
-    def moveBugreport(cls) -> None:
+    def __init__(self):
+        self.cmd = Commands()
+        self.err = Errors()
+        self.chk = Checks()
+        self.console = Console()
+
+    def moveBugreport(self) -> None:
         """
         Moves the existed bugreport in the home dir into "bug reports" folder.
         :return: None
@@ -42,23 +48,23 @@ class Bugreport:
         file_pattern = os.path.join(home_dir, 'bugreport*.zip')
         os.makedirs(bugreport_dir, exist_ok=True)
         files = glob.glob(file_pattern)
-        for file in files:
-            if file:
-                print(f'Found an existing Bugreport "{file.strip(home_dir)}" in {home_dir}\n')
-                shutil.move(file, bugreport_dir)
-                print(f'Moved "{file.strip(home_dir)}" to >> {bugreport_dir}\n')
+        if files:
+            for file in files:
+                if file:
+                    self.console.print(f'Found an existing Bugreport "{file.strip(home_dir)}" in {home_dir}\n')
+                    shutil.move(file, bugreport_dir)
+                    self.console.print(f'Moved "{file.strip(home_dir)}" to >> {bugreport_dir}\n')
 
-    @classmethod
-    def captureBugReport(cls) -> None:
+    def captureBugReport(self) -> None:
         """
         Captures the Bugreport from the connected Android device.
         :return: None
         """
         # Check for ADB and connected devices
-        checkAdbDevices()
+        self.chk.checkAdbDevices()
 
         # Move the bugreport
-        cls.moveBugreport()
+        self.moveBugreport()
 
         # Home directory path
         home_dir = os.path.expanduser('~')
@@ -66,7 +72,7 @@ class Bugreport:
         adb_command = f"adb bugreport {home_dir}"
 
         with Progress(transient=True) as progress:
-            task = progress.add_task(f"[magenta]Capturing Bug Report...to >> {home_dir} ", total=cls.TOTAL_PROGRESS)
+            task = progress.add_task(f"[magenta]Capturing Bug Report...to >> {home_dir} ", total=self.TOTAL_PROGRESS)
             try:
                 with ThreadPoolExecutor() as executor:
                     # Submit the subprocess task to the executor
@@ -77,7 +83,7 @@ class Bugreport:
                         time.sleep(1)
                         progress.update(task, advance=1)
                     # Ensure the progress bar reaches completion
-                    progress.update(task, completed=cls.TOTAL_PROGRESS)
+                    progress.update(task, completed=self.TOTAL_PROGRESS)
 
                     # Retrieve the result from the future
                     stdout, return_code = future.result()
@@ -90,11 +96,12 @@ class Bugreport:
                         print(f'\nERROR ❗ : Failed to collect the Bugreport.\n{stdout}')
 
             except Exception as e:
-                displayError(f'An unexpected error occurred: {e}')
+                self.err.displayError(f'An unexpected error occurred: {e}')
             except KeyboardInterrupt:
                 print('\nINTERRUPT ❗ : Dude.... You interrupted me.. 😬')
 
 
 if __name__ == "__main__":
-    Bugreport.moveBugreport()
-    Bugreport.captureBugReport()
+    bug = Bugreport()
+    bug.moveBugreport()
+    bug.captureBugReport()
