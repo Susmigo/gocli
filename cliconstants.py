@@ -2,7 +2,7 @@ class Gocli:
     TYPER_HELP = ":rocket: [bold][italic]Go Command Line Interface All-in-One.[/italic][/bold] :rocket:"
     TYPER_HELP_USAGE = " 🚀 Go Command Line Interface All-in-One. 🚀 "
     EPILOG = "Made by Govardhan with :heart:"
-    VERSION = "1.0"
+    VERSION = "1.11"
     VERSION_TEXT = "\n[bold][italic]Go CLI Version[/italic][/bold] :star: :"
     VERSION_FLAG_HELP = "Prints the Version."
 
@@ -29,9 +29,11 @@ class BugReport:
     CONSOLE_PRINT = "Generating the Bugreport..."
 
 
-class Screenshot:
+class Screenshots:
     SHORT_HELP = "Captures the screenshot."
-    CONSOLE_PRINT = "Capturing the screenshot."
+    CONSOLE_PRINT = "Capturing the screenshot...\n"
+    CONSOLE_PRINT_UPLOAD = "Capturing the screenshot and uploads to http://screen/...\n"
+    UPLOAD_FLAG_HELP = "Uploads the screenshot to http://screen/"
 
 
 class Screenrecord:

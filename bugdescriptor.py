@@ -36,7 +36,8 @@ class Descriptor(TableFormatter):
         super().__init__()
 
     def bugDescriptor(self):
-        locale = self.dut.getLocale()
+        device_locale = self.dut.getLocale()
+        locale = device_locale if device_locale is not None else "en-US"  # if the device locale returns none.
         launcherXText = (f"1. Setup the device with **{locale}** locale and install the above "
                          f"LauncherX build.")
         watsonText = (f"1. Setup the device with **{locale}** locale and install the above TV Home "

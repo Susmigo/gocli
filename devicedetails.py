@@ -10,8 +10,12 @@ class DeviceDetails:
         self.chk = Checks()
         self.err = Errors()
 
-    def getDeviceInfo(self, prop: str) -> str:
-        return self.cmd.runCommand(f'adb shell getprop {prop}')
+    def getDeviceInfo(self, prop: str) -> str | None:
+        output = self.cmd.runCommand(f'adb shell getprop {prop}')
+        if output:
+            return output
+        else:
+            return None
 
     def getDeviceManufacturer(self) -> str:
         return self.getDeviceInfo('ro.product.manufacturer')
@@ -48,5 +52,7 @@ class DeviceDetails:
 
 
 if __name__ == "__main__":
-    print("For string:\n", DeviceDetails().finalPrint())
-    print("For tabulate:\n", DeviceDetails().finalPrintTabulate())
+    # print("For string:\n", DeviceDetails().finalPrint())
+    # print("For tabulate:\n", DeviceDetails().finalPrintTabulate())
+    print(DeviceDetails().getDeviceName())
+    print(DeviceDetails().getLocale())

@@ -16,6 +16,7 @@ from bugdescriptor import Descriptor
 from bugreportgenerator import Bugreport
 from cliconstants import *
 from devicedetails import DeviceDetails
+from features import Screenshot
 from utilities import Checks
 from webparser import WebParser
 
@@ -75,7 +76,7 @@ def bugDescriptor(withbugreport: Annotated[
                                                                   is_eager=True)] = None, ):
     """
     Generates Bug description from the Connected Android device 📲.
-
+    flags:
     --with-bugreport, -w: Include a bug report in the output.
     --export, -e: Exports the Bug Description to buganizer.
 
@@ -111,7 +112,7 @@ def commentDescriptor(withbugreport: Annotated[
                                                                       is_eager=True)] = None, ):
     """
     Generates Comment description from the Connected Android device 📲.
-
+    flags:
     --with-bugreport, -w: Include a bug report in the output.
     --export, -e: Exports the Comment Description to buganizer bug ID.
 
@@ -151,12 +152,29 @@ typer.Option("--version", "-v", callback=version_callback,
 
 
 # noinspection PyUnusedLocal
-@app.command(name="ss", short_help=Screenshot.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
-def getBugreport(version: Annotated[Optional[bool],
-typer.Option("--version", "-v", callback=version_callback,
-             help=Gocli.VERSION_FLAG_HELP,
-             is_eager=True)] = None, ):
-    console.print(Screenshot.CONSOLE_PRINT)
+@app.command(name="ss", short_help=Screenshots.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
+def getScreenshot(copySs: Annotated[bool, typer.Option("--upload", '-u', help=Screenshots.UPLOAD_FLAG_HELP)] = False,
+                  version: Annotated[Optional[bool],
+                  typer.Option("--version", "-v", callback=version_callback,
+                               help=Gocli.VERSION_FLAG_HELP,
+                               is_eager=True)] = None, ):
+    """
+    Captures the screenshot from the Connected Android device 📲.
+    flags:
+    --upload, -u: Uploads the screenshot to the http://screen/
+
+
+    Examples:
+    $ gocli ss                     Takes the screenshot and copies to the clipboard
+    $ gocli ss --upload
+    $ gocli ss -u  [Recommended]  # Captures and uploads the screenshot
+    """
+    if copySs:
+        console.print(Screenshots.CONSOLE_PRINT_UPLOAD)
+    else:
+        console.print(Screenshots.CONSOLE_PRINT)
+    screenshot = Screenshot()
+    screenshot.screenshot(is_upload=copySs)
 
 
 # noinspection PyUnusedLocal

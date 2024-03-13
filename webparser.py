@@ -4,7 +4,7 @@ This file opens the links in chrome.
 import platform
 import subprocess
 import urllib.parse
-from typing import overload
+
 
 from utilities import Errors, ChromeProfile
 

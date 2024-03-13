@@ -1,10 +1,13 @@
 """
 Utilities that are re usuable in other scripts.
 """
+import datetime
 import json
 import os
+import shutil
 import subprocess
 import sys
+import time
 from typing import Any
 
 from rich.console import Console
@@ -26,7 +29,7 @@ class Errors:
         self.console.print("\nERROR :exclamation: : " + error_msg, style="italic bold red", emoji=True)
 
     def displayInfo(self, info_msg: str) -> None:
-        self.console.print("\n INFO :information_desk_person: :" + info_msg, style="italic", emoji=True)
+        self.console.print("\nINFO :information_desk_person: :" + info_msg, style="italic", emoji=True)
 
     def displaySuccess(self, info_msg: str) -> None:
         self.console.print("SUCCESS :rocket: : " + info_msg, style="bold green", emoji=True, new_line_start=True)
@@ -168,14 +171,35 @@ class HandleFiles(Errors):
         super().__init__()
         self.home = os.path.expanduser('~')
 
-    def checkDir(self, _dir: str) -> bool:
-        dir_path = os.path.join(self.home, _dir)
-        print(dir_path)
-        return os.path.exists(dir_path)
+    def checkDir(self, folder: str) -> bool:
+        dir_path = os.path.join(self.home, folder)
+        return os.path.exists(dir_path) and os.path.isdir(dir_path)
 
-    @staticmethod
-    def makeDir(_dir: str):
-        pass
+    def makeDir(self, folder: str) -> str:
+        path = os.path.join(self.home, folder)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    def moveOrCopyFiles(self, _ext: list, path: str, is_copy: bool = False, _start_name: str = ""):
+        destination_path = os.path.join(self.home, path)
+        if not self.checkDir(destination_path):
+            self.makeDir(destination_path)
+        try:
+            for _ in os.listdir(self.home):
+                if any(_.endswith(ext) and _.startswith(_start_name) for ext in _ext):
+                    file = os.path.join(self.home, _)
+                    self.console.print("Found existing files\n")
+                    if is_copy:
+                        shutil.copy(file, destination_path)
+                        self.console.print(f'{_} copied to {destination_path}\n')
+                    else:
+                        try:
+                            self.console.print(f'{_} moved to {destination_path}\n')
+                            shutil.move(file, destination_path)
+                        except shutil.Error:
+                            self.console.print('File already exists...')
+        except FileNotFoundError:
+            self.console.print('File not found...')
 
 
 if __name__ == "__main__":
@@ -196,4 +220,4 @@ if __name__ == "__main__":
     # print(cp.getProfileFromConfig())
     # print(cp.saveToConfig())
     hf = HandleFiles()
-    print(hf.checkDir("/temp"))
+    print(hf.moveOrCopyFiles(['.zipl'], 'bug reports', is_copy=True))
