@@ -17,7 +17,7 @@ from bugreportgenerator import Bugreport
 from cliconstants import *
 from devicedetails import DeviceDetails
 from features import Screenshot
-from utilities import Checks
+from utilities import Checks, NetworksOps
 from webparser import WebParser
 
 console = Console()
@@ -95,7 +95,7 @@ def bugDescriptor(withbugreport: Annotated[
     fo = descriptor.bugDescriptor()
     __printer(fo)
     webparser = WebParser()
-    if export:
+    if export & NetworksOps().checkNetwork():
         webparser.takeMetoBuganizer(fo)
         time.sleep(2)
     if withbugreport:
@@ -132,7 +132,7 @@ def commentDescriptor(withbugreport: Annotated[
     bugreport = Bugreport()
     __printer(fo)
     webparser = WebParser()
-    if export:
+    if export & NetworksOps().checkNetwork():
         _id = IntPrompt.ask(Comment.BUG_ID_FOR_COMMENT)
         webparser.takemetoBuganizer(_id, fo)
         time.sleep(2)

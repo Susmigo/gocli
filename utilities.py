@@ -7,7 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
-import time
+import requests
 from typing import Any
 
 from rich.console import Console
@@ -29,13 +29,14 @@ class Errors:
         self.console.print("\nERROR :exclamation: : " + error_msg, style="italic bold red", emoji=True)
 
     def displayInfo(self, info_msg: str) -> None:
-        self.console.print("\nINFO :information_desk_person: :" + info_msg, style="italic", emoji=True)
+        self.console.print("\nINFO :information_desk_person: : " + info_msg, style="italic", emoji=True)
 
     def displaySuccess(self, info_msg: str) -> None:
         self.console.print("SUCCESS :rocket: : " + info_msg, style="bold green", emoji=True, new_line_start=True)
 
     def displayInterrupt(self, info_msg: str) -> None:
         self.console.print("\nINTERRUPT :grey_exclamation: : " + info_msg, style="bold yellow", emoji=True)
+        sys.exit(1)
 
     def displayErrorExit(self, error_msg: str) -> Any:
         """
@@ -43,7 +44,7 @@ class Errors:
         :param error_msg: error msg given by user
         """
         self.console.print("\nERROR :bangbang: : " + error_msg, style="italic bold red", emoji=True)
-        sys.exit()
+        sys.exit(1)
 
 
 class Checks(Errors):
@@ -96,7 +97,21 @@ class Commands(Checks):
                 output = subprocess.run(_cmd, shell=True, check=True, capture_output=True, text=True)
                 return output.stdout.strip()
         except subprocess.CalledProcessError as e:
-            self.displayError(f"Error executing the command \n{e}.")
+            self.displayErrorExit(f"Error executing the command \n >> {e}.")
+        except KeyboardInterrupt:
+            self.displayErrorExit("Interrupted by User.")
+
+    def runSubprocess(self, _cmd: str) -> str | tuple[int, str]:
+        try:
+            # Execute the command and capture stdout and stderr
+            result = subprocess.run(_cmd, shell=True, capture_output=True, text=True)
+            # Check if the command was successful
+            if result.returncode == 0:
+                return result.stdout.strip()  # No error, return stdout
+            else:
+                return result.returncode, result.stderr.strip()  # Return stderr if there's an error
+        except Exception as e:
+            return str(e)  # Return the exception message as stderr
         except KeyboardInterrupt:
             self.displayErrorExit("Interrupted by User.")
 
@@ -202,11 +217,27 @@ class HandleFiles(Errors):
             self.console.print('File not found...')
 
 
+class NetworksOps(Errors):
+    def __init__(self):
+        super().__init__()
+
+    def checkNetwork(self) -> bool:
+        try:
+            response = requests.get("http://www.google.com", timeout=5)
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except requests.ConnectionError:
+            self.displayErrorExit("No Network. Connect to any and try again.")
+
+
 if __name__ == "__main__":
     # err = Errors()
     # chk = Checks()
     # cmd = Commands()
-    #
+    # stdout = cmd.runSubprocess('command -V snipit')
+    # print(stdout)
     # err.displayInterrupt('hi')
     # err.displayError('lol')
     # err.displaySuccess('success')
@@ -219,5 +250,10 @@ if __name__ == "__main__":
     # print(cp.saveToConfig())
     # print(cp.getProfileFromConfig())
     # print(cp.saveToConfig())
-    hf = HandleFiles()
-    print(hf.moveOrCopyFiles(['.zipl'], 'bug reports', is_copy=True))
+    # hf = HandleFiles()
+    # print(hf.moveOrCopyFiles(['.zip'], 'bug reports', is_copy=False))
+
+    # networkops
+    np = NetworksOps()
+    if True & np.checkNetwork():
+        print('pass')
