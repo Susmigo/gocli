@@ -71,18 +71,20 @@ class Screenshot:
                     self.err.displayInterrupt("Dude You interrupted me.... 😬")
             elif sys.platform == "linux":
                 try:
-                    command = f'xclip -selection clipboard -t image/png -i \\"{img_path}\\'
-                    self.cmd.runCommand(command)
+                    command = f'xclip -selection clipboard -t image/png -i \"{img_path}\"'
+                    self.cmd.runSubprocess(command, timeout=1)
                     if is_upload & self.nops.checkNetwork():
                         result, out = self.cmd.runSubprocess(f'snipit -f {img_path}')
-                        print(result)
                         if result != 0:
-                            self.cmd.runSubprocess('sudo apt install snipit-cli')
+                            _result = self.cmd.runSubprocess('sudo apt install snipit-cli -y > /dev/null')
+                            print(_result)
                             res, output = self.cmd.runSubprocess(f'snipit -f {img_path}')
                             self.console.print(output)
-
-                except (Exception, subprocess.CalledProcessError):
-                    self.err.displayError("Something went wrong in screenshot operations.")
+                        else:
+                            self.console.print(out)
+                        self.err.displaySuccess("Done")
+                except (Exception, subprocess.CalledProcessError) as e:
+                    self.err.displayError(f"Something went wrong in screenshot operations. {e}")
                 except KeyboardInterrupt:
                     self.err.displayErrorExit("Dude You interrupted me.... 😬")
         except FileNotFoundError:
@@ -100,4 +102,4 @@ class Screenrecord:
 
 if __name__ == "__main__":
     ss = Screenshot()
-    ss.copy_and_upload_screenshot(img_path=ss.takeScreenshot(), is_upload=True)
+    ss.screenshot(is_upload=True)
