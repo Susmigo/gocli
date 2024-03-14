@@ -101,13 +101,13 @@ class Commands(Checks):
         except KeyboardInterrupt:
             self.displayErrorExit("Interrupted by User.")
 
-    def runSubprocess(self, _cmd: str) -> str | tuple[int, str]:
+    def runSubprocess(self, _cmd: str, timeout=None) -> tuple[int, str]:
         try:
             # Execute the command and capture stdout and stderr
-            result = subprocess.run(_cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(_cmd, shell=True, capture_output=True, text=True, timeout=timeout)
             # Check if the command was successful
             if result.returncode == 0:
-                return result.stdout.strip()  # No error, return stdout
+                return result.returncode, result.stdout.strip()  # No error, return stdout
             else:
                 return result.returncode, result.stderr.strip()  # Return stderr if there's an error
         except Exception as e:
@@ -254,6 +254,6 @@ if __name__ == "__main__":
     # print(hf.moveOrCopyFiles(['.zip'], 'bug reports', is_copy=False))
 
     # networkops
-    np = NetworksOps()
-    if True & np.checkNetwork():
-        print('pass')
+    cmd = Commands()
+    res, out = cmd.runSubprocess('snipit -help')
+    print(res, out)
