@@ -6,12 +6,13 @@ import subprocess
 import urllib.parse
 
 
-from utilities import Errors, ChromeProfile
+from utils.chromeprofile import ChromeProfile
+from utils.display import Display
 
 
 class WebParser:
     def __init__(self):
-        self.err = Errors()
+        self.display = Display()
         self.cp = ChromeProfile()
 
     __browserPaths = {
@@ -31,10 +32,10 @@ class WebParser:
         try:
             command = [execPath] + args
             subprocess.Popen(command, stdout=subprocess.DEVNULL)
-        except FileNotFoundError:
-            self.err.displayErrorExit("Chrome executable path is not given correctly.")
-        except Exception:
-            self.err.displayErrorExit("Something went wrong.")
+        except FileNotFoundError as e:
+            self.display.error_Exit("Chrome executable path is not given correctly.", trace=str(e))
+        except Exception as e:
+            self.display.error_Exit("Something went wrong.", trace=str(e))
 
     @staticmethod
     def descParser(description: str) -> str:

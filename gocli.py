@@ -16,8 +16,10 @@ from bugdescriptor import Descriptor
 from bugreportgenerator import Bugreport
 from cliconstants import *
 from devicedetails import DeviceDetails
-from features import Screenshot
-from utilities import Checks, NetworksOps
+from features.screenshot import Screenshot
+from features.screenrecord import ScreenRecord
+from utils.checks import Checks
+from utils.network import NetworksOps
 from webparser import WebParser
 
 console = Console()
@@ -70,29 +72,31 @@ def version_callback(value: bool):
 @app.command(name="bug", short_help=Bug.SHORT_HELP, epilog=Gocli.EPILOG)
 def bugDescriptor(withbugreport: Annotated[
     bool, typer.Option("--with-bugreport", "-w", help=Bug.BUGREPORT_FLAG_HELP, show_default=False, )] = False,
-                  export: Annotated[bool, typer.Option("--export", '-e', help=Bug.EXPORT_FLAG_HELP, )] = False,
+                  export: Annotated[bool, typer.Option("--upload", '-u', help=Bug.EXPORT_FLAG_HELP, )] = False,
                   version: Annotated[Optional[bool], typer.Option("--version", "-v", callback=version_callback,
                                                                   help=Gocli.VERSION_FLAG_HELP,
                                                                   is_eager=True)] = None, ):
     """
     Generates Bug description from the Connected Android device 📲.
-    flags:
+
+    Options:
     --with-bugreport, -w: Include a bug report in the output.
-    --export, -e: Exports the Bug Description to buganizer.
+    --upload, -u: Uploads the Bug Description to buganizer.
 
     Examples:
     $ gocli bug --with-bugreport
     $ gocli bug -w
-    $ gocli bug --export
-    $ gocli bug -e
-    $ gocli bug -we  [Recommended]  # Generates bugreport, also exports bug description
+    $ gocli bug --upload
+    $ gocli bug -u
+    $ gocli bug -wu  [Recommended]  # Generates bugreport, also Uploads
+                                      bug description to buganizer.
     """
     descriptor = Descriptor()
     if withbugreport:
         console.print(Bug.WITH_BUGREPORT)
     else:
         console.print(Bug.WITHOUT_BUGREPORT)
-    fo = descriptor.bugDescriptor()
+    fo = descriptor.bug_descriptor()
     __printer(fo)
     webparser = WebParser()
     if export & NetworksOps().checkNetwork():
@@ -106,29 +110,31 @@ def bugDescriptor(withbugreport: Annotated[
 @app.command(name="cmt", short_help=Comment.SHORT_HELP, epilog=Gocli.EPILOG)
 def commentDescriptor(withbugreport: Annotated[
     bool, typer.Option("--with-bugreport", "-w", help=Comment.BUGREPORT_FLAG_HELP, show_default=False)] = False,
-                      export: Annotated[bool, typer.Option("--export", '-e', help=Comment.EXPORT_FLAG_HELP, )] = False,
+                      export: Annotated[bool, typer.Option("--upload", '-u', help=Comment.EXPORT_FLAG_HELP, )] = False,
                       version: Annotated[Optional[bool], typer.Option("--version", "-v", callback=version_callback,
                                                                       help=Gocli.VERSION_FLAG_HELP,
                                                                       is_eager=True)] = None, ):
     """
     Generates Comment description from the Connected Android device 📲.
-    flags:
+
+    Options:
     --with-bugreport, -w: Include a bug report in the output.
-    --export, -e: Exports the Comment Description to buganizer bug ID.
+    --upload, -u: Uploads the Comment Description to buganizer bug ID.
 
     Examples:
     $ gocli cmt --with-bugreport
     $ gocli cmt -w
-    $ gocli cmt --export
-    $ gocli cmt -e
-    $ gocli cmt -we  [Recommended]  # Generates bugreport, also exports Comment description.
+    $ gocli cmt --upload
+    $ gocli cmt -u
+    $ gocli cmt -wu  [Recommended]  # Generates bugreport, also exports Comment description
+                                      to buganizer bug ID.
     """
     if withbugreport:
         console.print(Comment.WITH_BUGREPORT)
     else:
         console.print(Comment.WITHOUT_BUGREPORT)
     descriptor = Descriptor()
-    fo = descriptor.commentDescriptor()
+    fo = descriptor.comment_descriptor()
     bugreport = Bugreport()
     __printer(fo)
     webparser = WebParser()
@@ -146,6 +152,9 @@ def getBugreport(version: Annotated[Optional[bool],
 typer.Option("--version", "-v", callback=version_callback,
              help=Gocli.VERSION_FLAG_HELP,
              is_eager=True)] = None, ):
+    """
+    Generates the Bug report from the Connected Android device 📲.
+    """
     console.print(BugReport.CONSOLE_PRINT)
     bugreport = Bugreport()
     bugreport.captureBugReport()
@@ -153,37 +162,55 @@ typer.Option("--version", "-v", callback=version_callback,
 
 # noinspection PyUnusedLocal
 @app.command(name="ss", short_help=Screenshots.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
-def getScreenshot(copySs: Annotated[bool, typer.Option("--upload", '-u', help=Screenshots.UPLOAD_FLAG_HELP)] = False,
+def getScreenShot(copySs: Annotated[bool, typer.Option("--upload", '-u', help=Screenshots.UPLOAD_FLAG_HELP)] = False,
                   version: Annotated[Optional[bool],
                   typer.Option("--version", "-v", callback=version_callback,
                                help=Gocli.VERSION_FLAG_HELP,
                                is_eager=True)] = None, ):
     """
     Captures the screenshot from the Connected Android device 📲.
-    flags:
+    Options:
     --upload, -u: Uploads the screenshot to the http://screen/
 
 
     Examples:
-    $ gocli ss                     Takes the screenshot and copies to the clipboard
+    $ gocli ss                      # Takes the screenshot and copies to the clipboard.
     $ gocli ss --upload
-    $ gocli ss -u  [Recommended]  # Captures and uploads the screenshot
+    $ gocli ss -u  [Recommended]    # Captures and uploads the screenshot.
     """
     if copySs:
         console.print(Screenshots.CONSOLE_PRINT_UPLOAD)
     else:
         console.print(Screenshots.CONSOLE_PRINT)
-    screenshot = Screenshot()
-    screenshot.screenshot(is_upload=copySs)
+    ss = Screenshot()
+    ss.screenshot(is_upload=copySs)
 
 
 # noinspection PyUnusedLocal
 @app.command(name="sr", short_help=Screenrecord.SHORT_HELP, epilog=Gocli.EPILOG, rich_help_panel="Tools & Utilities")
-def getBugreport(version: Annotated[Optional[bool],
-typer.Option("--version", "-v", callback=version_callback,
-             help=Gocli.VERSION_FLAG_HELP,
-             is_eager=True)] = None, ):
+def getScreenRecord(file_name: Annotated[
+    Optional[str], typer.Option('--file-name', '-f', help=Screenrecord.FILENAME_FLAG_HELP)] = None,
+                    duration: Annotated[
+                        Optional[int], typer.Option("--duration", "-d", help=Screenrecord.DURATION_FLAG_HELP)] = 180,
+                    version: Annotated[Optional[bool],
+                    typer.Option("--version", "-v", callback=version_callback,
+                                 help=Gocli.VERSION_FLAG_HELP,
+                                 is_eager=True)] = None,
+                    ):
+    """
+    Captures the Screen Recording from the Connected Android device 📲.
+
+    Options:
+        --file-name, -f: Name of the screen recording.
+        --duration, -d: Duration of the screen recording (default: 180 seconds).
+
+    Examples:
+        $ gocli sr -f "Name of the recording"       # Captures the Screen recording from the device.
+        $ gocli sr -d 10  [Recommended]            # Captures the Screen recording with 10 sec duration.
+    """
     console.print(Screenrecord.CONSOLE_PRINT)
+    scr = ScreenRecord()
+    scr.screenrecord(file_name=file_name, duration=duration)
 
 
 if __name__ == "__main__":

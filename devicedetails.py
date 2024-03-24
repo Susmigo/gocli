@@ -1,17 +1,17 @@
 """
 This script manages the device details of the connected device.
 """
-from utilities import Checks, Errors, Commands
+from utils.checks import Checks
+from utils.commands import Commands
 
 
 class DeviceDetails:
     def __init__(self):
         self.cmd = Commands()
         self.chk = Checks()
-        self.err = Errors()
 
     def getDeviceInfo(self, prop: str) -> str | None:
-        output = self.cmd.runCommand(f'adb shell getprop {prop}')
+        output = self.cmd.adbCommand(f'adb shell getprop {prop}')
         if output:
             return output
         else:
@@ -30,7 +30,7 @@ class DeviceDetails:
         return self.getDeviceInfo('ro.build.description')
 
     def getExperience(self) -> bool:
-        return "launcherx" in self.cmd.runCommand('adb shell pm list packages')
+        return "launcherx" in self.cmd.adbCommand('adb shell pm list packages')
 
     def getLocale(self) -> str:
         return self.getDeviceInfo('persist.sys.locale')
@@ -53,6 +53,5 @@ class DeviceDetails:
 
 if __name__ == "__main__":
     # print("For string:\n", DeviceDetails().finalPrint())
-    # print("For tabulate:\n", DeviceDetails().finalPrintTabulate())
-    print(DeviceDetails().getDeviceName())
-    print(DeviceDetails().getLocale())
+    print("For tabulate:\n", DeviceDetails().finalPrintTabulate())
+    print("locale", DeviceDetails().getLocale())

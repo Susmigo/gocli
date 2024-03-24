@@ -2,7 +2,7 @@ class Gocli:
     TYPER_HELP = ":rocket: [bold][italic]Go Command Line Interface All-in-One.[/italic][/bold] :rocket:"
     TYPER_HELP_USAGE = " 🚀 Go Command Line Interface All-in-One. 🚀 "
     EPILOG = "Made by Govardhan with :heart:"
-    VERSION = "1.12"
+    VERSION = "v1.15"
     VERSION_TEXT = "\n[bold][italic]Go CLI Version[/italic][/bold] :star: :"
     VERSION_FLAG_HELP = "Prints the Version."
 
@@ -37,6 +37,9 @@ class Screenshots:
 
 
 class Screenrecord:
-    SHORT_HELP = "Captures the screenrecord."
-    CONSOLE_PRINT = "Capturing the screenrecord."
+    SHORT_HELP = "Captures the Screen Record."
+    CONSOLE_PRINT = "Capturing the Screen Record...\n"
+    FILENAME_FLAG_HELP = "Name of the Screen Recording."
+    DURATION_FLAG_HELP = "Duration of the Screen Recording."
+
 

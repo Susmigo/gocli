@@ -4,18 +4,21 @@ This script manages the installed applications in the connected device.
 import re
 
 from devicedetails import DeviceDetails
-from utilities import Commands, Checks, Errors
+from utils.checks import Checks
+from utils.commands import Commands
+from utils.display import Display
 
 
 class ApkDetails:
     def __init__(self):
         self.cmd = Commands()
         self.chk = Checks()
-        self.err = Errors()
+        self.display = Display()
         self.dut = DeviceDetails()
 
     def getVersionNameCode(self, package) -> str:
-        version = self.cmd.runCommand(f"adb shell dumpsys package {package} | grep version")
+        # noinspection PyCompatibility
+        version = self.cmd.adbCommand(f"adb shell dumpsys package {package} | grep version")
         versionNamePattern = r'versionName=([^\s]*)'
         versionCodePattern = r'versionCode=([^\s]*)'
         versionName = re.findall(versionNamePattern, version)[0]
@@ -62,4 +65,4 @@ class ApkDetails:
 if __name__ == "__main__":
     apkDetails = ApkDetails()
     print("For string:\n", apkDetails.finalPrint())
-    print("For tabulate:\n", apkDetails.finalPrint())
+    print("For tabulate:\n", apkDetails.finalPrintTabulate())

@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
-from utilities import Commands
+from utils.commands import Commands
 
 
 class VersionManager:
@@ -18,21 +18,21 @@ class VersionManager:
         self.ps = PlayStoreScrapper()
 
     def listPackages(self) -> list[str]:
-        _raw = self.cmd.runCommand('adb shell pm list packages').split('\n')
+        _raw = self.cmd.adbCommand('adb shell pm list packages').split('\n')
         return [(pckg.split(':', 1)[1]) for pckg in _raw]
 
     def getVersionName(self, _package: str) -> str:
-        _packageversionname = self.cmd.runCommand(f'adb shell dumpsys package {_package} | grep versionName=').split(
+        _packageversionname = self.cmd.adbCommand(f'adb shell dumpsys package {_package} | grep versionName=').split(
             '\n', 1)
         return _packageversionname[0].split('=', 1)[1]
 
     def getVersionCode(self, _package: str) -> str:
-        _packageversioncode = self.cmd.runCommand(f'adb shell dumpsys package {_package} | grep versionCode=').split(
+        _packageversioncode = self.cmd.adbCommand(f'adb shell dumpsys package {_package} | grep versionCode=').split(
             '\n', 1)
         return _packageversioncode[0].split(' ', 1)[0]
 
     def getVersionNameCode(self, _package) -> str:
-        version = self.cmd.runCommand(f"adb shell dumpsys package {_package} | grep version")
+        version = self.cmd.adbCommand(f"adb shell dumpsys package {_package} | grep version")
         versionNamePattern = r'versionName=([^\s]*)'
         versionCodePattern = r'versionCode=([^\s]*)'
         versionName = re.findall(versionNamePattern, version)[0]

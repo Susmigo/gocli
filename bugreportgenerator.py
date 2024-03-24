@@ -11,7 +11,9 @@ from concurrent.futures import ThreadPoolExecutor
 from rich.console import Console
 from rich.progress import Progress
 
-from utilities import Commands, Errors, Checks
+from utils.checks import Checks
+from utils.commands import Commands
+from utils.display import Display
 
 
 def runSubProcess(command):
@@ -34,7 +36,7 @@ class Bugreport:
 
     def __init__(self):
         self.cmd = Commands()
-        self.err = Errors()
+        self.display = Display()
         self.chk = Checks()
         self.console = Console()
 
@@ -96,7 +98,7 @@ class Bugreport:
                         print(f'\nERROR ❗ : Failed to collect the Bugreport.\n{stdout}')
 
             except Exception as e:
-                self.err.displayError(f'An unexpected error occurred: {e}')
+                self.display.error_Exit(f'An unexpected error occurred', trace=str(e))
             except KeyboardInterrupt:
                 print('\nINTERRUPT ❗ : Dude.... You interrupted me.. 😬')
 
