@@ -55,15 +55,17 @@ create_and_activate_venv() {
 
 fetch_files_from_git() {
     REPO_URL="https://github.com/susmigo/gocli.git"  # Replace with your Git repository URL
-    FILE_EXTENSIONS=("txt" "py" "md")  # Replace with the list of file extensions you want to fetch
+#    FILE_EXTENSIONS=("txt" "py" "md")  # Replace with the list of file extensions you want to fetch
 
     echo "Fetching files from Git repository..."
     git clone "$REPO_URL" temp_repo
 
     echo "Copying specified files to the virtual environment..."
-    for ext in "${FILE_EXTENSIONS[@]}"; do
-        find "temp_repo" -type f -name "*.$ext" ! -path "temp_repo/bin/*" ! -path "temp_repo/lib/*" ! -path "temp_repo/include/*" -exec cp {} "$VENV_DIR/" \;
-    done
+#    for ext in "${FILE_EXTENSIONS[@]}"; do
+#        find "temp_repo" -name "*.$ext" ! -path "temp_repo/bin/*" ! -path "temp_repo/lib/*" ! -path "temp_repo/include/*" -exec cp -r {} "$VENV_DIR/" \;
+#    done
+    find "temp_repo" -mindepth 1 -maxdepth 1 ! -path "temp_repo/bin/*" ! -path "temp_repo/lib/*" ! -path "temp_repo/include/*" -exec cp -r {} "$VENV_DIR/" \;
+
 
     echo "Cleaning up..."
     rm -rf temp_repo
